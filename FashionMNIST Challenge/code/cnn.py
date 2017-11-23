@@ -124,6 +124,11 @@ correct = tf.equal(tf.argmax(d_4,1), tf.argmax(y,1))
 accuracy = tf.reduce_mean(tf.cast(correct,"float"))
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
+#利用tensorboard实现loss的可视化
+tf.summary.scalar('loss',loss_function)
+summary_op = tf.summary.merge_all()
+summary_writer = tf.summary.FileWriter('./graph', sess.graph)
+
 
 #运行与打印
 for i in range(1100):
@@ -131,8 +136,9 @@ for i in range(1100):
         train_accuracy = accuracy.eval(session = sess,
                                     feed_dict = {x:train_image[i], y:train_label[i], keep_prob:1.0})
         print("step %d, train_accuracy %g" %(i, train_accuracy))
-    optimizer.run(session = sess, feed_dict = {x:train_image[i], y:train_label[i],
-                keep_prob:0.5}) 
+    # optimizer.run(session = sess, feed_dict = {x:train_image[i], y:train_label[i],keep_prob:0.5})
+    summary_str, _ = sess.run([summary_op, optimizer], feed_dict = {x:train_image[i], y:train_label[i],keep_prob:0.5})
+    summary_writer.add_summary(summary_str,i)
 print("test accuracy %g" % accuracy.eval(session = sess,
     feed_dict = {x:test_image, y:test_label,
-                keep_prob:1.0})) 
+                keep_prob:1.0}))
